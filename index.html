@@ -11,7 +11,7 @@
     <div class="hero__content">
       <p class="eyebrow">Free dart scoring for everyone</p>
       <h1>Dart Board</h1>
-      <p class="lede">Run 01 games, Minnesota, and Cricket without subscriptions. Create players, track turns, and keep matches fair with built-in bust protection and target tracking.</p>
+      <p class="lede">Run 301, 501, 701, and Cricket without subscriptions. Create players, track turns, and keep matches fair with built-in bust protection and target tracking.</p>
     </div>
     <div class="hero__badge">
       <span class="tag">Open</span>
@@ -30,26 +30,11 @@
         <label class="stacked">
           <span>Game type</span>
           <select id="game-type">
-            <option value="x01">01 (301 / 501 / 701)</option>
-            <option value="minnesota">Minnesota (301 double in / double out)</option>
+            <option value="301">301 (double in / double out)</option>
+            <option value="501" selected>501 (double out)</option>
+            <option value="701">701 (double out)</option>
             <option value="cricket">Cricket</option>
           </select>
-        </label>
-
-        <label class="stacked" data-visibility="x01-setup">
-          <span>Starting score</span>
-          <select id="start-score">
-            <option value="301">301</option>
-            <option value="501" selected>501</option>
-            <option value="701">701</option>
-          </select>
-        </label>
-
-        <label class="stacked" data-visibility="x01-setup">
-          <span class="inline">
-            <input type="checkbox" id="double-out" />
-            <span>Double out required</span>
-          </span>
         </label>
 
         <label class="stacked" data-visibility="players">
@@ -78,14 +63,23 @@
             <span>Score this visit</span>
             <input id="visit-score" type="number" min="0" max="180" value="60" />
           </label>
-          <label class="stacked inline" id="double-in-toggle" title="Use when double-in is required.">
-            <input type="checkbox" id="double-in-hit" />
-            <span>Double-in achieved this visit</span>
-          </label>
-          <label class="stacked inline" title="Only relevant if double out is required.">
-            <input type="checkbox" id="double-out-hit" />
-            <span>Checkout on a double</span>
-          </label>
+          <div class="dart-pad" aria-label="Dartboard input">
+            <div class="pad-header">
+              <div>
+                <p class="muted small">Tap three darts to auto-score</p>
+                <p id="dart-selection" class="badge">No darts selected</p>
+              </div>
+              <div class="toggle-group" role="group" aria-label="Multiplier">
+                <button type="button" class="toggle active" data-mult="1">Single</button>
+                <button type="button" class="toggle" data-mult="2">Double</button>
+                <button type="button" class="toggle" data-mult="3">Triple</button>
+              </div>
+            </div>
+            <div class="pad-grid" id="dart-grid"></div>
+            <div class="pad-actions">
+              <button type="button" id="clear-darts" class="ghost">Clear darts</button>
+            </div>
+          </div>
         </div>
 
         <div class="stacked" data-visibility="cricket">

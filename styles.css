@@ -133,6 +133,27 @@ button {
 
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.toggle-group {
+  display: inline-flex;
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.toggle {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.toggle.active {
+  background: var(--accent);
+  color: #022c22;
+}
+
 .primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   color: #022c22;
@@ -196,6 +217,53 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .score-value {
   font-size: 1.4rem;
   font-weight: 800;
+}
+
+.small { font-size: 0.9rem; }
+
+.dart-pad {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+}
+
+.pad-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pad-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 0.4rem;
+  justify-items: stretch;
+}
+
+.pad-button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem;
+  border-radius: 10px;
+}
+
+.pad-button:hover {
+  border-color: var(--accent);
+}
+
+.pad-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .table {
