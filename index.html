@@ -80,7 +80,7 @@
         <div id="x01-input" class="pad" hidden>
           <div class="pad__header">
             <div>
-              <p class="muted small">Tap three darts to auto-score</p>
+              <p class="muted small">Enter up to three darts, then confirm</p>
               <p id="dart-selection" class="badge">No darts selected</p>
             </div>
             <div class="toggle-group" role="group" aria-label="Multiplier">
@@ -90,14 +90,22 @@
             </div>
           </div>
           <div class="pad-grid" id="dart-grid"></div>
-          <div class="pad-actions">
-            <button type="button" id="clear-darts" class="ghost">Clear</button>
-            <button type="button" id="record-visit" class="primary">Enter</button>
-          </div>
         </div>
 
-        <div id="cricket-input" class="cricket-hint" hidden>
-          <p>Tap the number for a single, or the D/T buttons for doubles and triples. Three darts auto-advance.</p>
+        <div id="cricket-input" class="pad" hidden>
+          <div class="pad__header">
+            <div>
+              <p class="muted small">Tap numbers or D/T to queue hits, then confirm</p>
+              <p id="cricket-selection" class="badge">No hits queued</p>
+            </div>
+          </div>
+          <p class="muted small">First tap draws a slash, second completes an X, third circles it closed.</p>
+        </div>
+
+        <div class="pad-actions global-actions">
+          <button type="button" id="clear-darts" class="ghost">Clear</button>
+          <button type="button" id="undo-dart" class="ghost">Undo</button>
+          <button type="button" id="record-visit" class="primary">Confirm</button>
         </div>
       </div>
     </section>
