@@ -198,7 +198,7 @@ function undoLastEntry() {
   if (state.gameType === "cricket") {
     const removed = state.cricketSelections.pop();
     if (removed) {
-      state.cricketDarts = Math.max(0, state.cricketDarts - removed.hits);
+      state.cricketDarts = Math.max(0, state.cricketDarts - 1);
     }
     updateCricketSelectionText();
     render();
@@ -285,11 +285,10 @@ function allTargetsClosed(player) {
 
 function queueCricketHit(target, hits) {
   if (state.gameType !== "cricket" || state.matchOver) return;
-  const remaining = 3 - state.cricketDarts;
-  if (remaining <= 0 || hits > remaining) return;
+  if (state.cricketDarts >= 3) return;
 
   state.cricketSelections.push({ target, hits });
-  state.cricketDarts += hits;
+  state.cricketDarts += 1;
   updateCricketSelectionText();
   render();
 }
