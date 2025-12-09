@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0c0c0f" />
+  <title>Dart Board - Free Scoreboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section id="start-screen" class="panel panel--elevated">
+      <div class="branding">
+        <p class="eyebrow">Start a free match</p>
+        <h1>Dart Board</h1>
+        <p class="lede">Pick a game, name your players, and jump straight into scoring.</p>
+      </div>
+
+      <div class="start-grid">
+        <div class="stack">
+          <p class="muted">Choose a game</p>
+          <div id="game-picker" class="game-picker" role="group" aria-label="Game type">
+            <button type="button" data-game="301">301</button>
+            <button type="button" data-game="501" class="active">501</button>
+            <button type="button" data-game="701">701</button>
+            <button type="button" data-game="cricket">Cricket</button>
+          </div>
+          <small class="muted">301 requires double-in and double-out. 501/701 require double-out. Cricket uses standard marks and points.</small>
+        </div>
+
+        <div class="stack">
+          <label class="stacked">Player 1 name
+            <input id="player-one" placeholder="Home" />
+          </label>
+          <label class="stacked">Player 2 name
+            <input id="player-two" placeholder="Away" />
+          </label>
+          <button id="begin-match" class="primary">Begin match</button>
+          <p id="start-feedback" class="status muted" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="score-screen" class="panel" hidden>
+      <div class="score-topbar">
+        <button type="button" id="home-button" class="ghost">Home</button>
+      </div>
+      <header class="score-header">
+        <div class="side side--left">
+          <p class="muted">Home</p>
+          <h2 id="left-name">Player 1</h2>
+          <p id="left-score" class="score-value">0</p>
+        </div>
+        <div class="turn-indicator" id="turn-indicator">Waiting to start</div>
+        <div class="side side--right">
+          <p class="muted">Away</p>
+          <h2 id="right-name">Player 2</h2>
+          <p id="right-score" class="score-value">0</p>
+        </div>
+      </header>
+
+      <div id="x01-board" class="board" hidden>
+        <div class="x01-grid">
+          <div class="stat">
+            <p class="muted">Last visit</p>
+            <p id="last-left">–</p>
+          </div>
+          <div class="stat">
+            <p class="muted">Status</p>
+            <p id="status-text">Leg on</p>
+          </div>
+          <div class="stat">
+            <p class="muted">Last visit</p>
+            <p id="last-right">–</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="cricket-board" class="board" hidden>
+        <div class="cricket-table" id="cricket-table"></div>
+      </div>
+
+      <div class="input-bar">
+        <div id="x01-input" class="pad" hidden>
+          <div class="pad__header">
+            <div>
+              <p class="muted small">Enter up to three darts, then confirm</p>
+              <p id="dart-selection" class="badge">No darts selected</p>
+            </div>
+            <div class="toggle-group" role="group" aria-label="Multiplier">
+              <button type="button" class="toggle active" data-mult="1">S</button>
+              <button type="button" class="toggle" data-mult="2">D</button>
+              <button type="button" class="toggle" data-mult="3">T</button>
+            </div>
+          </div>
+          <div class="pad-grid" id="dart-grid"></div>
+        </div>
+
+        <div id="cricket-input" class="pad" hidden>
+          <div class="pad__header">
+            <div>
+              <p class="muted small">Tap numbers or D/T to queue hits, then confirm</p>
+              <p id="cricket-selection" class="badge">No hits queued</p>
+            </div>
+          </div>
+          <p class="muted small">First tap draws a slash, second completes an X, third circles it closed.</p>
+        </div>
+
+        <div class="pad-actions global-actions">
+          <button type="button" id="clear-darts" class="ghost">Clear</button>
+          <button type="button" id="undo-dart" class="ghost">Undo</button>
+          <button type="button" id="record-visit" class="primary">Confirm</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
