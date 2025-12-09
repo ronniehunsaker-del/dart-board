@@ -1,64 +1,57 @@
-const setupForm = document.getElementById("setup-form");
-const gameTypeSelect = document.getElementById("game-type");
-const playersInput = document.getElementById("players");
-const recordButton = document.getElementById("record-throw");
-const nextButton = document.getElementById("next-player");
-const resetButton = document.getElementById("reset");
-const currentPlayerPill = document.getElementById("current-player-pill");
-const scoreboardEl = document.getElementById("scoreboard");
-const turnControls = document.getElementById("turn-controls");
-const visitScoreInput = document.getElementById("visit-score");
+const gamePicker = document.getElementById("game-picker");
+const beginButton = document.getElementById("begin-match");
+const startFeedback = document.getElementById("start-feedback");
+const playerOneInput = document.getElementById("player-one");
+const playerTwoInput = document.getElementById("player-two");
+const startScreen = document.getElementById("start-screen");
+const scoreScreen = document.getElementById("score-screen");
+const leftName = document.getElementById("left-name");
+const rightName = document.getElementById("right-name");
+const leftScore = document.getElementById("left-score");
+const rightScore = document.getElementById("right-score");
+const turnIndicator = document.getElementById("turn-indicator");
+const statusText = document.getElementById("status-text");
+const lastLeft = document.getElementById("last-left");
+const lastRight = document.getElementById("last-right");
+const x01Board = document.getElementById("x01-board");
+const cricketBoard = document.getElementById("cricket-board");
+const cricketTable = document.getElementById("cricket-table");
+const x01Input = document.getElementById("x01-input");
+const cricketInput = document.getElementById("cricket-input");
 const dartGrid = document.getElementById("dart-grid");
 const dartSelection = document.getElementById("dart-selection");
 const clearDartsButton = document.getElementById("clear-darts");
+const recordVisitButton = document.getElementById("record-visit");
 const multiplierButtons = document.querySelectorAll(".toggle-group .toggle");
-const cricketTargetSelect = document.getElementById("cricket-target");
-const cricketHitsInput = document.getElementById("cricket-hits");
-const feedbackEl = document.getElementById("turn-feedback");
-const setupWarning = document.getElementById("setup-warning");
 
 const targets = [20, 19, 18, 17, 16, 15, 25];
 const dartNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
 
 const state = {
   gameType: "501",
-  settings: {},
   players: [],
   currentPlayer: 0,
   matchOver: false,
   currentDarts: [],
   activeMultiplier: 1,
+  cricketDarts: 0,
 };
 
-function setVisibility(gameType) {
-  document.querySelectorAll("[data-visibility]").forEach((el) => {
-    const scope = el.getAttribute("data-visibility");
-    const isX01Turn = scope === "x01-turn" && gameType !== "cricket";
-    const shouldShow = scope === gameType || scope === "players" || isX01Turn;
-    el.style.display = shouldShow ? "flex" : "none";
+function pickGame(game) {
+  state.gameType = game;
+  gamePicker.querySelectorAll("button").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.game === game);
   });
 }
 
-function resetMatch() {
+function resetState() {
   state.players = [];
   state.currentPlayer = 0;
   state.matchOver = false;
   state.currentDarts = [];
-  recordButton.disabled = true;
-  nextButton.disabled = true;
-  feedbackEl.textContent = "";
-  currentPlayerPill.textContent = "No match yet";
-  scoreboardEl.innerHTML = "";
-  turnControls.setAttribute("data-state", "idle");
-  setupWarning.style.display = "block";
+  state.cricketDarts = 0;
+  state.activeMultiplier = 1;
   updateDartSelectionText();
-}
-
-function parsePlayers(raw) {
-  return raw
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
 }
 
 function createPlayer(name) {
@@ -67,71 +60,53 @@ function createPlayer(name) {
       name,
       points: 0,
       marks: targets.reduce((acc, t) => ({ ...acc, [t]: 0 }), {}),
+      lastHits: "–",
       status: "",
     };
   }
 
+  const startScore = Number(state.gameType);
   return {
     name,
-    startScore: state.settings.startScore,
-    score: state.settings.startScore,
-    isIn: !state.settings.doubleInRequired,
+    startScore,
+    score: startScore,
+    isIn: state.gameType !== "301",
     status: "",
-    lastVisit: null,
+    lastVisit: "–",
   };
 }
 
-function startMatch(event) {
-  event.preventDefault();
-  const selectedGame = gameTypeSelect.value;
-  const players = parsePlayers(playersInput.value);
-  if (players.length < 2) {
-    feedbackEl.textContent = "Add at least two players to start a match.";
+function beginMatch() {
+  const p1 = playerOneInput.value.trim() || "Home";
+  const p2 = playerTwoInput.value.trim() || "Away";
+
+  if (!state.gameType) {
+    startFeedback.textContent = "Choose a game to begin.";
+    startFeedback.classList.add("status-error");
     return;
   }
 
-  state.gameType = selectedGame;
-  if (selectedGame === "cricket") {
-    state.settings = {};
-  } else {
-    state.settings = {
-      startScore: Number(selectedGame),
-      doubleOutRequired: true,
-      doubleInRequired: selectedGame === "301",
-    };
-  }
+  startFeedback.textContent = "";
+  startFeedback.classList.remove("status-error");
+  resetState();
+  state.players = [createPlayer(p1), createPlayer(p2)];
+  leftName.textContent = p1;
+  rightName.textContent = p2;
+  turnIndicator.textContent = `${state.players[state.currentPlayer].name}'s turn`;
+  statusText.textContent = "Leg on";
+  lastLeft.textContent = "–";
+  lastRight.textContent = "–";
 
-  state.players = players.map(createPlayer);
-  state.currentPlayer = 0;
-  state.matchOver = false;
-  state.currentDarts = [];
-  recordButton.disabled = false;
-  nextButton.disabled = false;
-  turnControls.setAttribute("data-state", "active");
-  setupWarning.style.display = "none";
-  feedbackEl.textContent = "Match started!";
-  updateCurrentPlayerPill();
-  renderScoreboard();
-  setVisibility(selectedGame);
-  updateDartSelectionText();
-}
+  render();
 
-function advancePlayer() {
-  state.currentPlayer = (state.currentPlayer + 1) % state.players.length;
-  clearCurrentDarts();
-  updateCurrentPlayerPill();
-}
-
-function updateCurrentPlayerPill() {
-  const player = state.players[state.currentPlayer];
-  currentPlayerPill.textContent = player ? `${player.name}'s visit` : "No match yet";
+  startScreen.hidden = true;
+  scoreScreen.hidden = false;
 }
 
 function updateDartSelectionText() {
   if (!dartSelection) return;
   if (!state.currentDarts.length) {
     dartSelection.textContent = "No darts selected";
-    visitScoreInput.value = 60;
     return;
   }
 
@@ -140,12 +115,6 @@ function updateDartSelectionText() {
     .map((dart) => `${dart.multiplier}×${dart.value === 25 ? "Bull" : dart.value}`)
     .join(" • ");
   dartSelection.textContent = `${summary} = ${total}`;
-  visitScoreInput.value = total;
-}
-
-function clearCurrentDarts() {
-  state.currentDarts = [];
-  updateDartSelectionText();
 }
 
 function setActiveMultiplier(multiplier) {
@@ -158,68 +127,63 @@ function setActiveMultiplier(multiplier) {
 function buildDartGrid() {
   dartGrid.innerHTML = dartNumbers
     .map((value) => {
-      const label = value === 25 ? "Bull (25)" : value;
+      const label = value === 25 ? "Bull" : value;
       return `<button type="button" class="pad-button" data-value="${value}">${label}</button>`;
     })
     .join("");
 }
 
 function handleDartButtonClick(value) {
-  if (state.gameType === "cricket" || state.matchOver || !state.players.length) return;
+  if (state.gameType === "cricket" || state.matchOver) return;
   if (state.currentDarts.length >= 3) return;
 
   state.currentDarts.push({ value, multiplier: state.activeMultiplier });
   updateDartSelectionText();
 
   if (state.currentDarts.length === 3) {
-    recordVisitFromDarts();
+    recordVisit();
   }
 }
 
-function recordVisitFromDarts() {
-  if (!state.currentDarts.length) return;
-  const darts = [...state.currentDarts];
-  const score = darts.reduce((sum, dart) => sum + dart.value * dart.multiplier, 0);
-  const doubleInAchieved = darts.some((dart) => dart.multiplier === 2);
-  const finalDartDouble = darts[darts.length - 1].multiplier === 2;
-
-  handleX01Throw({ score, doubleInAchieved, finalDartDouble });
-  clearCurrentDarts();
+function clearCurrentDarts() {
+  state.currentDarts = [];
+  updateDartSelectionText();
 }
 
 function bust(player, reason) {
   player.status = "Bust";
-  feedbackEl.textContent = `${player.name} busts: ${reason}`;
-  feedbackEl.className = "status-bust";
+  statusText.textContent = `${player.name}: ${reason}`;
 }
 
 function markWin(player) {
   state.matchOver = true;
   player.status = "Winner";
-  feedbackEl.textContent = `${player.name} wins the leg!`;
-  feedbackEl.className = "status-win";
-  recordButton.disabled = true;
-  nextButton.disabled = true;
-  clearCurrentDarts();
+  statusText.textContent = `${player.name} wins the leg!`;
+  turnIndicator.textContent = "Match over";
 }
 
-function handleX01Throw(visitOverride = {}) {
-  if (state.matchOver) return;
+function advancePlayer() {
+  state.currentPlayer = (state.currentPlayer + 1) % state.players.length;
+  turnIndicator.textContent = `${state.players[state.currentPlayer].name}'s turn`;
+}
 
-  const score = visitOverride.score ?? Number(visitScoreInput.value);
-  const doubleInAchieved = visitOverride.doubleInAchieved ?? false;
-  const finalDartDouble = visitOverride.finalDartDouble ?? false;
+function handleX01Visit() {
+  const darts = [...state.currentDarts];
+  if (!darts.length) return;
+
+  const score = darts.reduce((sum, dart) => sum + dart.value * dart.multiplier, 0);
+  const doubleInAchieved = darts.some((dart) => dart.multiplier === 2);
+  const finalDartDouble = darts[darts.length - 1].multiplier === 2;
   const player = state.players[state.currentPlayer];
   player.status = "";
-  player.lastVisit = score;
-  feedbackEl.className = "";
 
-  if (!player.isIn && state.settings.doubleInRequired) {
+  if (!player.isIn && state.gameType === "301") {
     if (doubleInAchieved) {
       player.isIn = true;
     } else {
       bust(player, "double-in required");
-      renderScoreboard();
+      player.lastVisit = score;
+      render();
       advancePlayer();
       return;
     }
@@ -228,170 +192,163 @@ function handleX01Throw(visitOverride = {}) {
   const nextScore = player.score - score;
 
   if (nextScore < 0) {
-    bust(player, "score went below zero");
+    bust(player, "bust below zero");
   } else if (nextScore === 0) {
-    if (state.settings.doubleOutRequired && !finalDartDouble) {
-      bust(player, "checkout must be on a double");
-    } else {
+    if (finalDartDouble) {
       player.score = 0;
       markWin(player);
+    } else {
+      bust(player, "checkout must be on a double");
     }
   } else {
     player.score = nextScore;
-    feedbackEl.textContent = `${player.name} scored ${score}. ${nextScore} remaining.`;
-    feedbackEl.className = "";
+    statusText.textContent = `${player.name} scored ${score}. ${nextScore} remaining.`;
   }
 
-  renderScoreboard();
+  player.lastVisit = score;
+  render();
   if (!state.matchOver) advancePlayer();
+}
+
+function recordVisit() {
+  if (state.gameType !== "cricket") {
+    handleX01Visit();
+    clearCurrentDarts();
+    return;
+  }
 }
 
 function allTargetsClosed(player) {
   return targets.every((t) => player.marks[t] >= 3);
 }
 
-function handleCricketThrow() {
-  if (state.matchOver) return;
-  const player = state.players[state.currentPlayer];
-  const target = Number(cricketTargetSelect.value);
-  const hits = Number(cricketHitsInput.value);
-  player.status = "";
-  feedbackEl.className = "";
+function handleCricketHit(target, hits) {
+  if (state.gameType !== "cricket" || state.matchOver) return;
 
-  const previousMarks = player.marks[target];
-  const projected = previousMarks + hits;
+  const player = state.players[state.currentPlayer];
+  const previous = player.marks[target];
+  const projected = previous + hits;
   const newMarks = Math.min(3, projected);
   const closedByOthers = state.players
-    .filter((p, idx) => idx !== state.currentPlayer)
+    .filter((_, idx) => idx !== state.currentPlayer)
     .every((p) => p.marks[target] >= 3);
 
   let scoringHits = Math.max(0, projected - 3);
-  if (closedByOthers) {
-    scoringHits = 0;
-  }
+  if (closedByOthers) scoringHits = 0;
 
   player.marks[target] = newMarks;
-  const targetValue = target === 25 ? 25 : target;
+  const value = target === 25 ? 25 : target;
   if (player.marks[target] >= 3) {
-    player.points += scoringHits * targetValue;
+    player.points += scoringHits * value;
   }
 
+  player.lastHits = `${hits} on ${target === 25 ? "Bull" : target}`;
+  statusText.textContent = `${player.name} hits ${player.lastHits}.`;
+
   const closedAll = allTargetsClosed(player);
-  const maxOpponentPoints = Math.max(...state.players.map((p, idx) => idx === state.currentPlayer ? player.points : p.points));
-
-  feedbackEl.textContent = `${player.name} hits ${hits} on ${target === 25 ? "Bull" : target}.`;
-  feedbackEl.className = "";
-
-  if (closedAll && player.points >= maxOpponentPoints) {
+  const opponentPoints = state.players[state.currentPlayer === 0 ? 1 : 0].points;
+  if (closedAll && player.points >= opponentPoints) {
     markWin(player);
   }
 
-  renderScoreboard();
-  if (!state.matchOver) advancePlayer();
+  state.cricketDarts += hits;
+  render();
+  if (!state.matchOver && state.cricketDarts >= 3) {
+    state.cricketDarts = 0;
+    advancePlayer();
+  }
 }
 
-function renderCricketMarks(player) {
-  return `
-    <div class="cricket-grid">
-      ${targets
-        .map((t) => {
-          const marks = player.marks[t];
-          const filled = "●".repeat(marks) + "○".repeat(3 - marks);
-          const label = t === 25 ? "Bull" : t;
-          return `<div class="target-tile"><strong>${label}</strong><span>${filled}</span></div>`;
-        })
-        .join("")}
-    </div>
-  `;
-}
-
-function renderScoreboard() {
-  scoreboardEl.innerHTML = state.players
-    .map((player, idx) => {
-      const isTurn = idx === state.currentPlayer && !state.matchOver;
-      const badge = player.status || (isTurn ? "On throw" : "Ready");
-      const badgeClass = player.status === "Winner" ? "status-win" : player.status === "Bust" ? "status-bust" : "";
-
-      if (state.gameType === "cricket") {
-        return `
-          <article class="player-card">
-            <div class="player-card__header">
-              <h3>${player.name}</h3>
-              <span class="pill ${badgeClass}">${badge}</span>
-            </div>
-            <div class="badge-stack">
-              <span class="badge">Points: ${player.points}</span>
-            </div>
-            ${renderCricketMarks(player)}
-          </article>
-        `;
-      }
-
+function renderCricketTable() {
+  const [p1, p2] = state.players;
+  const rows = targets
+    .map((target) => {
+      const label = target === 25 ? "B" : target;
+      const p1Marks = "✕".repeat(Math.min(3, p1.marks[target])).padEnd(3, "○");
+      const p2Marks = "✕".repeat(Math.min(3, p2.marks[target])).padEnd(3, "○");
       return `
-        <article class="player-card">
-          <div class="player-card__header">
-            <div>
-              <h3>${player.name}</h3>
-              <p class="muted small">Starting at ${player.startScore}</p>
-            </div>
-            <span class="pill ${badgeClass}">${badge}</span>
-          </div>
-          <table class="table">
-            <tbody>
-              <tr><th scope="row">Score</th><td><span class="score-value">${player.score}</span></td></tr>
-              <tr><th scope="row">Last visit</th><td>${player.lastVisit ?? "–"}</td></tr>
-              <tr><th scope="row">Double-in</th><td>${state.settings.doubleInRequired ? (player.isIn ? "✔️" : "Not in") : "Not required"}</td></tr>
-              <tr><th scope="row">Double-out</th><td>${state.settings.doubleOutRequired ? "Required" : "Not required"}</td></tr>
-            </tbody>
-          </table>
-        </article>
+        <div class="cricket-row" data-target="${target}">
+          <div class="mark" data-player="0">${p1Marks}</div>
+          <button class="cricket-btn" data-hits="2" aria-label="Double ${label}">D</button>
+          <button class="cricket-number" data-hits="1">${label}</button>
+          <button class="cricket-btn" data-hits="3" aria-label="Triple ${label}">T</button>
+          <div class="mark" data-player="1">${p2Marks}</div>
+        </div>
       `;
     })
     .join("");
+
+  cricketTable.innerHTML = `
+    <div class="cricket-header">
+      <div>${state.players[0].name}</div>
+      <div></div>
+      <div>Number</div>
+      <div></div>
+      <div>${state.players[1].name}</div>
+    </div>
+    ${rows}
+  `;
 }
 
-function recordThrow() {
-  if (state.gameType === "cricket") {
-    handleCricketThrow();
-    return;
+function render() {
+  const [p1, p2] = state.players;
+  if (!p1 || !p2) return;
+
+  const isCricket = state.gameType === "cricket";
+  x01Board.hidden = isCricket;
+  x01Input.hidden = isCricket;
+  cricketBoard.hidden = !isCricket;
+  cricketInput.hidden = !isCricket;
+
+  if (isCricket) {
+    leftScore.textContent = p1.points;
+    rightScore.textContent = p2.points;
+    renderCricketTable();
+  } else {
+    leftScore.textContent = p1.score;
+    rightScore.textContent = p2.score;
+    lastLeft.textContent = p1.lastVisit;
+    lastRight.textContent = p2.lastVisit;
+    statusText.textContent = state.matchOver ? statusText.textContent : "Leg on";
   }
-
-  if (state.currentDarts.length) {
-    recordVisitFromDarts();
-    return;
-  }
-
-  handleX01Throw();
 }
 
-function skipTurn() {
-  feedbackEl.textContent = `${state.players[state.currentPlayer].name} skips the visit.`;
-  feedbackEl.className = "";
-  advancePlayer();
-  renderScoreboard();
-}
-
-gameTypeSelect.addEventListener("change", (event) => {
-  setVisibility(event.target.value);
+gamePicker.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-game]");
+  if (!button) return;
+  pickGame(button.dataset.game);
 });
 
-setupForm.addEventListener("submit", startMatch);
-recordButton.addEventListener("click", recordThrow);
-nextButton.addEventListener("click", skipTurn);
-resetButton.addEventListener("click", resetMatch);
+beginButton.addEventListener("click", beginMatch);
+
 dartGrid.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-value]");
   if (!button) return;
   handleDartButtonClick(Number(button.dataset.value));
 });
 
+clearDartsButton.addEventListener("click", clearCurrentDarts);
+recordVisitButton.addEventListener("click", recordVisit);
+
 multiplierButtons.forEach((button) =>
   button.addEventListener("click", () => setActiveMultiplier(Number(button.dataset.mult)))
 );
 
-clearDartsButton.addEventListener("click", clearCurrentDarts);
+cricketTable.addEventListener("click", (event) => {
+  const row = event.target.closest(".cricket-row");
+  if (!row) return;
+  const target = Number(row.dataset.target);
+
+  if (event.target.classList.contains("cricket-number")) {
+    handleCricketHit(target, 1);
+  }
+
+  if (event.target.classList.contains("cricket-btn")) {
+    const hits = Number(event.target.dataset.hits);
+    handleCricketHit(target, hits);
+  }
+});
 
 buildDartGrid();
 setActiveMultiplier(1);
-setVisibility("501");
-resetMatch();
+updateDartSelectionText();

@@ -7,121 +7,101 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="hero">
-    <div class="hero__content">
-      <p class="eyebrow">Free dart scoring for everyone</p>
-      <h1>Dart Board</h1>
-      <p class="lede">Run 301, 501, 701, and Cricket without subscriptions. Create players, track turns, and keep matches fair with built-in bust protection and target tracking.</p>
-    </div>
-    <div class="hero__badge">
-      <span class="tag">Open</span>
-      <span class="tag">Offline-ready</span>
-      <span class="tag">Score fast</span>
-    </div>
-  </header>
-
-  <main class="layout">
-    <section class="card" aria-labelledby="setup-title">
-      <div class="card__header">
-        <h2 id="setup-title">Match setup</h2>
-        <p class="muted">Pick your game, add players, and set starting rules.</p>
+  <main class="app-shell">
+    <section id="start-screen" class="panel panel--elevated">
+      <div class="branding">
+        <p class="eyebrow">Start a free match</p>
+        <h1>Dart Board</h1>
+        <p class="lede">Pick a game, name your players, and jump straight into scoring.</p>
       </div>
-      <form id="setup-form" class="grid-form">
-        <label class="stacked">
-          <span>Game type</span>
-          <select id="game-type">
-            <option value="301">301 (double in / double out)</option>
-            <option value="501" selected>501 (double out)</option>
-            <option value="701">701 (double out)</option>
-            <option value="cricket">Cricket</option>
-          </select>
-        </label>
 
-        <label class="stacked" data-visibility="players">
-          <span>Players (comma separated)</span>
-          <input id="players" placeholder="Add at least two players e.g. Alex, Sam" />
-        </label>
+      <div class="start-grid">
+        <div class="stack">
+          <p class="muted">Choose a game</p>
+          <div id="game-picker" class="game-picker" role="group" aria-label="Game type">
+            <button type="button" data-game="301">301</button>
+            <button type="button" data-game="501" class="active">501</button>
+            <button type="button" data-game="701">701</button>
+            <button type="button" data-game="cricket">Cricket</button>
+          </div>
+          <small class="muted">301 requires double-in and double-out. 501/701 require double-out. Cricket uses standard marks and points.</small>
+        </div>
 
-        <button type="submit" class="primary">Start match</button>
-      </form>
+        <div class="stack">
+          <label class="stacked">Player 1 name
+            <input id="player-one" placeholder="Home" />
+          </label>
+          <label class="stacked">Player 2 name
+            <input id="player-two" placeholder="Away" />
+          </label>
+          <button id="begin-match" class="primary">Begin match</button>
+          <p id="start-feedback" class="status muted" role="status"></p>
+        </div>
+      </div>
     </section>
 
-    <section class="card" aria-labelledby="turn-title">
-      <div class="card__header">
-        <div>
-          <h2 id="turn-title">Throw recorder</h2>
-          <p class="muted">Enter each visit to keep the scoreboard in sync.</p>
+    <section id="score-screen" class="panel" hidden>
+      <header class="score-header">
+        <div class="side side--left">
+          <p class="muted">Home</p>
+          <h2 id="left-name">Player 1</h2>
+          <p id="left-score" class="score-value">0</p>
         </div>
-        <div class="pill" id="current-player-pill">No match yet</div>
+        <div class="turn-indicator" id="turn-indicator">Waiting to start</div>
+        <div class="side side--right">
+          <p class="muted">Away</p>
+          <h2 id="right-name">Player 2</h2>
+          <p id="right-score" class="score-value">0</p>
+        </div>
+      </header>
+
+      <div id="x01-board" class="board" hidden>
+        <div class="x01-grid">
+          <div class="stat">
+            <p class="muted">Last visit</p>
+            <p id="last-left">–</p>
+          </div>
+          <div class="stat">
+            <p class="muted">Status</p>
+            <p id="status-text">Leg on</p>
+          </div>
+          <div class="stat">
+            <p class="muted">Last visit</p>
+            <p id="last-right">–</p>
+          </div>
+        </div>
       </div>
 
-      <div id="turn-controls" class="stacked" data-state="idle">
-        <div class="notice" id="setup-warning">Start a match to begin tracking throws.</div>
+      <div id="cricket-board" class="board" hidden>
+        <div class="cricket-table" id="cricket-table"></div>
+      </div>
 
-        <div class="stacked" data-visibility="x01-turn">
-          <label class="stacked">
-            <span>Score this visit</span>
-            <input id="visit-score" type="number" min="0" max="180" value="60" />
-          </label>
-          <div class="dart-pad" aria-label="Dartboard input">
-            <div class="pad-header">
-              <div>
-                <p class="muted small">Tap three darts to auto-score</p>
-                <p id="dart-selection" class="badge">No darts selected</p>
-              </div>
-              <div class="toggle-group" role="group" aria-label="Multiplier">
-                <button type="button" class="toggle active" data-mult="1">Single</button>
-                <button type="button" class="toggle" data-mult="2">Double</button>
-                <button type="button" class="toggle" data-mult="3">Triple</button>
-              </div>
+      <div class="input-bar">
+        <div id="x01-input" class="pad" hidden>
+          <div class="pad__header">
+            <div>
+              <p class="muted small">Tap three darts to auto-score</p>
+              <p id="dart-selection" class="badge">No darts selected</p>
             </div>
-            <div class="pad-grid" id="dart-grid"></div>
-            <div class="pad-actions">
-              <button type="button" id="clear-darts" class="ghost">Clear darts</button>
+            <div class="toggle-group" role="group" aria-label="Multiplier">
+              <button type="button" class="toggle active" data-mult="1">S</button>
+              <button type="button" class="toggle" data-mult="2">D</button>
+              <button type="button" class="toggle" data-mult="3">T</button>
             </div>
+          </div>
+          <div class="pad-grid" id="dart-grid"></div>
+          <div class="pad-actions">
+            <button type="button" id="clear-darts" class="ghost">Clear</button>
+            <button type="button" id="record-visit" class="primary">Enter</button>
           </div>
         </div>
 
-        <div class="stacked" data-visibility="cricket">
-          <label class="stacked">
-            <span>Target</span>
-            <select id="cricket-target">
-              <option value="20">20</option>
-              <option value="19">19</option>
-              <option value="18">18</option>
-              <option value="17">17</option>
-              <option value="16">16</option>
-              <option value="15">15</option>
-              <option value="25">Bull</option>
-            </select>
-          </label>
-          <label class="stacked">
-            <span>Marks hit</span>
-            <input id="cricket-hits" type="number" min="0" max="9" value="3" />
-          </label>
+        <div id="cricket-input" class="cricket-hint" hidden>
+          <p>Tap the number for a single, or the D/T buttons for doubles and triples. Three darts auto-advance.</p>
         </div>
-
-        <div class="actions">
-          <button id="record-throw" class="primary" disabled>Record throw</button>
-          <button id="next-player" class="ghost" disabled>Skip turn</button>
-          <button id="reset" class="ghost">Reset</button>
-        </div>
-        <div id="turn-feedback" role="status" aria-live="polite" class="muted"></div>
       </div>
-    </section>
-
-    <section class="card" aria-labelledby="scoreboard-title">
-      <div class="card__header">
-        <h2 id="scoreboard-title">Scoreboard</h2>
-        <p class="muted">Live view of every player.</p>
-      </div>
-      <div id="scoreboard" class="scoreboard"></div>
     </section>
   </main>
-
-  <footer class="footer">
-    <p>Built for dart fans who want a free, fair, and fast scoreboard.</p>
-  </footer>
 
   <script src="app.js"></script>
 </body>
