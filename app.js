@@ -16,6 +16,7 @@ const lastRight = document.getElementById("last-right");
 const x01Board = document.getElementById("x01-board");
 const cricketBoard = document.getElementById("cricket-board");
 const cricketTable = document.getElementById("cricket-table");
+const homeButton = document.getElementById("home-button");
 const x01Input = document.getElementById("x01-input");
 const cricketInput = document.getElementById("cricket-input");
 const dartGrid = document.getElementById("dart-grid");
@@ -55,8 +56,21 @@ function resetState() {
   state.cricketDarts = 0;
   state.cricketSelections = [];
   state.activeMultiplier = 1;
+  setActiveMultiplier(1);
   updateDartSelectionText();
   updateCricketSelectionText();
+}
+
+function goHome() {
+  resetState();
+  startScreen.hidden = false;
+  scoreScreen.hidden = true;
+  turnIndicator.textContent = "Waiting to start";
+  statusText.textContent = "Leg on";
+  dartSelection.textContent = "No darts selected";
+  cricketSelection.textContent = "No hits queued";
+  startFeedback.textContent = "";
+  startFeedback.classList.remove("status-error");
 }
 
 function createPlayer(name) {
@@ -175,6 +189,9 @@ function clearCurrentDarts() {
   state.cricketDarts = 0;
   updateDartSelectionText();
   updateCricketSelectionText();
+  if (state.gameType === "cricket") {
+    render();
+  }
 }
 
 function undoLastEntry() {
@@ -184,6 +201,7 @@ function undoLastEntry() {
       state.cricketDarts = Math.max(0, state.cricketDarts - removed.hits);
     }
     updateCricketSelectionText();
+    render();
     return;
   }
 
@@ -273,6 +291,20 @@ function queueCricketHit(target, hits) {
   state.cricketSelections.push({ target, hits });
   state.cricketDarts += hits;
   updateCricketSelectionText();
+  render();
+}
+
+function getProjectedMarks(playerIndex) {
+  const player = state.players[playerIndex];
+  const marks = { ...player.marks };
+
+  if (state.gameType === "cricket" && !state.matchOver && playerIndex === state.currentPlayer) {
+    state.cricketSelections.forEach(({ target, hits }) => {
+      marks[target] = Math.min(3, (marks[target] || 0) + hits);
+    });
+  }
+
+  return marks;
 }
 
 function applyCricketHit(player, target, hits) {
@@ -323,11 +355,13 @@ function applyCricketSelections() {
 
 function renderCricketTable() {
   const [p1, p2] = state.players;
+  const projectedP1 = getProjectedMarks(0);
+  const projectedP2 = getProjectedMarks(1);
   const rows = targets
     .map((target) => {
       const label = target === 25 ? "B" : target;
-      const p1Marks = Math.min(3, p1.marks[target]);
-      const p2Marks = Math.min(3, p2.marks[target]);
+      const p1Marks = Math.min(3, projectedP1[target]);
+      const p2Marks = Math.min(3, projectedP2[target]);
       return `
         <div class="cricket-row" data-target="${target}">
           <div class="mark" data-player="0">${renderMarkIcons(p1Marks)}</div>
@@ -382,6 +416,7 @@ gamePicker.addEventListener("click", (event) => {
 });
 
 beginButton.addEventListener("click", beginMatch);
+homeButton.addEventListener("click", goHome);
 
 dartGrid.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-value]");

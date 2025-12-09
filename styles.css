@@ -99,6 +99,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border-bottom: 1px solid var(--border);
 }
 
+.score-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
 .side h2 { margin: 0; font-size: 1.8rem; }
 .side p { margin: 0; }
 
