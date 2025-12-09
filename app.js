@@ -139,14 +139,10 @@ function updateCricketSelectionText() {
 }
 
 function renderMarkIcons(count) {
-  const slots = [0, 1, 2].map((idx) => {
-    const slotState = idx < count ? idx + 1 : 0;
-    if (slotState === 1) return '<span class="mark-slot mark-slot--slash">/</span>';
-    if (slotState === 2) return '<span class="mark-slot mark-slot--x">×</span>';
-    if (slotState === 3) return '<span class="mark-slot mark-slot--closed">Ⓧ</span>';
-    return '<span class="mark-slot">○</span>';
-  });
-  return slots.join("");
+  if (count <= 0) return '<span class="mark-icon mark-icon--empty">&nbsp;</span>';
+  if (count === 1) return '<span class="mark-icon mark-icon--slash">/</span>';
+  if (count === 2) return '<span class="mark-icon mark-icon--x">✕</span>';
+  return '<span class="mark-icon mark-icon--closed">Ⓧ</span>';
 }
 
 function setActiveMultiplier(multiplier) {

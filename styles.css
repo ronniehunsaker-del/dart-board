@@ -222,28 +222,38 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .mark {
   text-align: center;
   font-weight: 800;
-  letter-spacing: 0.18em;
   display: flex;
-  gap: 0.25rem;
   justify-content: center;
+  align-items: center;
 }
 
-.mark-slot {
-  width: 18px;
-  height: 18px;
+.mark-icon {
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  background: #1f1f27;
-  color: var(--muted);
+  font-size: 1.35rem;
 }
 
-.mark-slot--slash { color: var(--accent-strong); }
-.mark-slot--x { color: var(--accent); }
-.mark-slot--closed {
-  color: #0d0c10;
+.mark-icon--empty {
+  color: transparent;
+}
+
+.mark-icon--slash {
+  color: var(--accent-strong);
+  font-size: 1.6rem;
+}
+
+.mark-icon--x {
+  color: var(--accent);
+  font-size: 1.6rem;
+}
+
+.mark-icon--closed {
   background: var(--accent-strong);
+  color: #0d0c10;
+  border-radius: 50%;
 }
 
 .cricket-hint {
